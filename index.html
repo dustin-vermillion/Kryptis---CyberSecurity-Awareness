@@ -34,13 +34,43 @@
 }
 
 *, *::before, *::after{ box-sizing:border-box; margin:0; padding:0; }
-html{ scroll-behavior:smooth; }
+html{ scroll-behavior:smooth; background: var(--bg); }
 body{
-  background: var(--bg);
+  background: transparent;
   color: var(--body);
   font-family: var(--font-body);
   line-height: 1.65;
   overflow-x: hidden;
+  position: relative;
+}
+
+/* ============================================================
+   SCENE BACKGROUND — parallax blueprint + ambient color grade
+   Two fixed, full-viewport layers sit behind all content:
+   a color-grade layer whose background-color is driven by scroll
+   position (JS), and a faint circuit-schematic SVG layer that
+   drifts at a slower rate than the page (parallax) for depth.
+   ============================================================ */
+.scene-bg{ position:fixed; inset:0; z-index:-2; overflow:hidden; pointer-events:none; }
+.color-grade{
+  position:absolute; inset:0;
+  background: var(--bg);
+  transition: background-color 0.4s linear;
+  will-change: background-color;
+}
+.blueprint-layer{
+  position:absolute;
+  left:50%; top:-25%;
+  width:170vw; height:170vh;
+  min-width:1200px; min-height:1200px;
+  transform: translate(-50%, 0);
+  color: var(--teal);
+  opacity: 0.05;
+  will-change: transform;
+}
+.blueprint-layer svg{ width:100%; height:100%; display:block; }
+@media (prefers-reduced-motion: reduce){
+  .blueprint-layer{ transform: translate(-50%, 0) !important; }
 }
 a{ color:inherit; text-decoration:none; }
 ul{ list-style:none; }
@@ -114,11 +144,35 @@ header.masthead{
 /* ============================================================
    3. HERO + MAGNETIC BUTTON
    ============================================================ */
-.hero{ padding: 130px 0 110px; position:relative; }
+.hero{ padding: 130px 0 110px; position:relative; overflow: hidden; }
 .hero .eyebrow{ margin-bottom:26px; }
-.hero h1{ font-size: clamp(2.5rem, 6.6vw, 5.8rem); line-height: 1.05; max-width: 16ch; margin-bottom: 30px; }
+.hero h1{ font-size: clamp(2.5rem, 6.6vw, 5.8rem); line-height: 1.05; max-width: 16ch; margin-bottom: 30px; position:relative; z-index:2; }
 .hero h1 span{ color: var(--teal); }
-.hero p.lede{ max-width: 52ch; font-size:1.08rem; margin-bottom:44px; }
+.hero p.lede{ max-width: 52ch; font-size:1.08rem; margin-bottom:44px; position:relative; z-index:2; }
+.hero-ctas{ position:relative; z-index:2; }
+
+/* Digital Footprint watermark — fingerprint ridges rendered as circuit traces */
+.hero-graphic{
+  position:absolute;
+  top:50%; right:-9%;
+  transform: translateY(-50%);
+  width: clamp(340px, 42vw, 620px);
+  height: auto;
+  z-index:1;
+  opacity: 0.9;
+  pointer-events:none;
+  filter: drop-shadow(0 0 34px rgba(99,152,168,0.28)) drop-shadow(0 0 70px rgba(68,108,121,0.18));
+}
+.hero-graphic .fp-ridge{ fill:none; stroke: var(--teal); stroke-width:1.4; opacity:0.55; }
+.hero-graphic .fp-ridge:nth-of-type(3n){ stroke: var(--cyan); opacity:0.4; }
+.hero-graphic .fp-node{ fill: var(--teal); opacity:0.85; }
+.hero-graphic .fp-node:nth-of-type(4n){ fill: var(--cyan); }
+@media (max-width: 900px){
+  .hero-graphic{ opacity:0.4; right:-22%; width: 70vw; }
+}
+@media (max-width: 560px){
+  .hero-graphic{ display:none; }
+}
 
 .hero-ctas{ display:flex; gap:16px; flex-wrap:wrap; }
 .btn{
@@ -190,10 +244,70 @@ section{ padding: 108px 0; border-bottom: 1px solid var(--border); }
 /* ============================================================
    7. HARDWARE TOKEN SANDBOX
    ============================================================ */
+.token-steps{ display:flex; flex-direction:column; gap:54px; }
+.token-step-head{ display:flex; align-items:center; gap:14px; margin-bottom:26px; }
+.token-step-num{ width:32px; height:32px; border-radius:50%; border:1px solid var(--border-strong); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:600; font-size:0.82rem; color: var(--teal); flex-shrink:0; }
+.token-step-head h3{ font-size:1.05rem; }
+.token-step{ transition: opacity 0.6s ease, filter 0.6s ease; }
+.token-step.locked{ opacity:0.32; filter: blur(2px) grayscale(0.4); pointer-events:none; }
+.token-step.locked .token-step-num{ color: var(--body); border-color: var(--border); }
+.token-step-status{ font-family: var(--mono); font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color: var(--teal); margin-left:auto; }
+.token-step.locked .token-step-status{ color: var(--body); }
+
+/* --- Biometric pre-check --- */
+.bio-panel{ display:grid; grid-template-columns: 1fr 1fr; gap:56px; align-items:center; }
+@media (max-width:860px){ .bio-panel{ grid-template-columns:1fr; gap:36px; } }
+.bio-copy p{ margin-bottom:20px; max-width:44ch; }
+.bio-hold-btn{
+  user-select: none; -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: none;
+  position: relative;
+}
+.bio-hold-btn.holding{ background: linear-gradient(100deg, var(--cyan), var(--teal)); }
+.bio-status{ margin-top:16px; font-family: var(--mono); font-size:0.76rem; color: var(--body); letter-spacing:0.02em; }
+.bio-status.success{ color: var(--teal); }
+
+.bio-stage{ display:flex; align-items:center; justify-content:center; }
+.bio-thumb{
+  position:relative; width:150px; height:190px;
+  border-radius: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+  user-select:none; -webkit-user-select:none; -webkit-touch-callout:none;
+}
+.bio-thumb svg{ width:70%; height:70%; opacity:0.55; }
+.bio-thumb svg path{ stroke: var(--body); fill:none; stroke-width:1.4; transition: stroke 0.4s ease; }
+.bio-thumb.scanning svg path{ stroke: var(--teal); }
+.bio-thumb.scanned svg path{ stroke: var(--teal); opacity:0.9; }
+.bio-scanline{
+  position:absolute; left:0; right:0; top:0; height:2px;
+  background: var(--teal);
+  box-shadow: 0 0 12px 2px rgba(99,152,168,0.85), 0 0 26px 6px rgba(99,152,168,0.35);
+  opacity:0;
+  transform: translateY(0);
+}
+.bio-thumb.scanning .bio-scanline{
+  opacity:1;
+  animation: bioSweep 1.5s linear;
+}
+.bio-progress{
+  position:absolute; inset:0; background: rgba(99,152,168,0.08);
+  transform: scaleY(0); transform-origin: bottom;
+  transition: transform 0.05s linear;
+}
+@keyframes bioSweep{
+  from{ top:0; }
+  to{ top:100%; }
+}
+
 .token-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items:center; }
 @media (max-width:860px){ .token-grid{ grid-template-columns:1fr; gap:44px; } }
 .token-copy p{ margin-bottom:14px; max-width:46ch; }
 .token-copy .btn{ margin-top:16px; }
+.token-copy .btn:disabled{ opacity:0.4; cursor:not-allowed; }
 .token-stage{ position:relative; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; height: 240px; display:flex; align-items:center; justify-content:center; overflow: hidden; }
 .token-port{ position:relative; width:150px; height:44px; background: #14161b; border: 1px solid var(--border); border-radius: 6px; display:flex; align-items:center; justify-content:flex-start; padding-left: 10px; }
 .token-port-mouth{ width:34px; height:14px; background: #0c0d10; border-radius:3px; border: 1px solid rgba(255,255,255,0.06); }
@@ -214,7 +328,12 @@ section{ padding: 108px 0; border-bottom: 1px solid var(--border); }
    ============================================================ */
 .dossier-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:1px; background: var(--border); border-radius:14px; overflow:hidden; }
 @media (max-width:900px){ .dossier-grid{ grid-template-columns:1fr; } }
-.dossier-card{ background: var(--surface); padding: 34px 30px 38px; position: relative; cursor: crosshair; }
+.dossier-card{
+  background: var(--surface); padding: 34px 30px 38px; position: relative; cursor: crosshair;
+  user-select: none; -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: none;
+}
 .dossier-stamp{ display:inline-flex; align-items:center; gap:8px; font-family: var(--mono); font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--teal); border:1px solid var(--teal); border-radius:100px; padding: 5px 12px; margin-bottom:20px; }
 .dossier-card h3{ font-size:1.15rem; margin-bottom:16px; }
 .redacted-wrap{ position:relative; }
@@ -269,6 +388,35 @@ footer{ padding: 44px 0; }
 <body>
 
 <!-- ============================================================
+     SCENE BACKGROUND — parallax circuit blueprint + color grade
+     ============================================================ -->
+<div class="scene-bg" aria-hidden="true">
+  <div class="color-grade" id="colorGrade"></div>
+  <div class="blueprint-layer" id="blueprintLayer">
+    <svg viewBox="0 0 900 1400" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <pattern id="circuitUnit" width="180" height="180" patternUnits="userSpaceOnUse">
+          <path d="M0 45 H55 V0" fill="none" stroke="currentColor" stroke-width="1.1" />
+          <path d="M110 0 V55 H180" fill="none" stroke="currentColor" stroke-width="1.1" />
+          <path d="M0 135 H45 V180" fill="none" stroke="currentColor" stroke-width="1.1" />
+          <path d="M180 110 H135 V180" fill="none" stroke="currentColor" stroke-width="1.1" />
+          <path d="M55 45 H110" fill="none" stroke="currentColor" stroke-width="1.1" />
+          <path d="M45 135 H135 V110" fill="none" stroke="currentColor" stroke-width="1.1" />
+          <rect x="72" y="86" width="24" height="10" fill="none" stroke="currentColor" stroke-width="1" />
+          <rect x="72" y="86" width="24" height="10" fill="none" stroke="currentColor" stroke-width="1" transform="rotate(90 84 91)" />
+          <circle cx="55" cy="45" r="3" fill="currentColor" />
+          <circle cx="110" cy="55" r="3" fill="currentColor" />
+          <circle cx="45" cy="135" r="3" fill="currentColor" />
+          <circle cx="135" cy="110" r="3" fill="currentColor" />
+          <circle cx="90" cy="90" r="2" fill="none" stroke="currentColor" stroke-width="1" />
+        </pattern>
+      </defs>
+      <rect width="900" height="1400" fill="url(#circuitUnit)" />
+    </svg>
+  </div>
+</div>
+
+<!-- ============================================================
      HEADER
      ============================================================ -->
 <header class="masthead">
@@ -304,6 +452,27 @@ footer{ padding: 44px 0; }
       <a href="#token" class="btn btn-secondary">See a Hardware Key</a>
     </div>
   </div>
+
+  <svg class="hero-graphic" viewBox="0 0 400 520" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <path class="fp-ridge" d="M200 40 C120 40 70 100 70 190 L70 260 C70 340 100 400 140 440" />
+    <path class="fp-ridge" d="M200 60 C140 60 100 108 100 190 L100 250 L140 250 L140 300 C140 350 160 390 190 420" />
+    <path class="fp-ridge" d="M200 80 C160 80 130 118 130 190 L130 230 L180 230 L180 190 L220 190 L220 260 C220 320 200 370 170 410" />
+    <path class="fp-ridge" d="M200 100 C180 100 160 126 160 190 L160 210 L200 210 L200 160 L250 160 L250 280 C250 340 235 385 210 420" />
+    <path class="fp-ridge" d="M200 120 C190 120 190 150 190 190 L230 190 L230 140 L280 140 L280 300 C280 350 270 390 250 425" />
+    <path class="fp-ridge" d="M60 200 C60 300 100 380 160 440 C180 460 205 470 230 465" />
+    <path class="fp-ridge" d="M40 190 C40 310 90 400 165 460 C195 483 235 490 270 480" />
+    <path class="fp-ridge" d="M300 130 L300 220 L340 220 L340 320 C340 380 315 420 280 450" />
+    <circle class="fp-node" cx="70" cy="260" r="4" />
+    <circle class="fp-node" cx="140" cy="250" r="4" />
+    <circle class="fp-node" cx="180" cy="230" r="4" />
+    <circle class="fp-node" cx="220" cy="190" r="4" />
+    <circle class="fp-node" cx="230" cy="140" r="4" />
+    <circle class="fp-node" cx="280" cy="140" r="4" />
+    <circle class="fp-node" cx="340" cy="220" r="4" />
+    <circle class="fp-node" cx="230" cy="465" r="4" />
+    <circle class="fp-node" cx="170" cy="410" r="4" />
+    <circle class="fp-node" cx="140" cy="440" r="4" />
+  </svg>
 </section>
 
 <!-- ============================================================
@@ -386,36 +555,82 @@ footer{ padding: 44px 0; }
       <p>A small physical device — like a YubiKey — that proves it's really you, without a code to type or a text message to intercept.</p>
     </div>
 
-    <div class="token-grid">
-      <div class="token-copy">
-        <p>A hardware key plugs into a USB port or taps over NFC. When a site asks for your second
-        factor, you simply touch the key instead of typing a code — nothing can be phished, guessed,
-        or intercepted, because the proof never leaves the device.</p>
-        <p>Insert the simulated key to see how it completes the circuit.</p>
-        <button class="btn btn-primary" id="insertKeyBtn">Insert Hardware Key</button>
+    <div class="token-steps">
+
+      <div class="token-step" id="bioStep">
+        <div class="token-step-head">
+          <span class="token-step-num">01</span>
+          <h3>Biometric Pre-Check</h3>
+          <span class="token-step-status" id="bioStepStatus">Not started</span>
+        </div>
+        <div class="bio-panel">
+          <div class="bio-copy">
+            <p>Most workflows confirm it's really you before a hardware key will even respond. Press
+            and hold the sensor below for a moment to simulate that check.</p>
+            <button class="btn btn-primary bio-hold-btn" id="bioHoldBtn">Hold for Biometric Scan</button>
+            <p class="bio-status" id="bioStatus">Press and hold for 1.5 seconds</p>
+          </div>
+          <div class="bio-stage">
+            <div class="bio-thumb" id="bioThumb">
+              <svg viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M60 15 C30 15 14 40 14 70 L14 90 C14 115 24 130 38 138" />
+                <path d="M60 25 C38 25 26 45 26 70 L26 85 L44 85 L44 100 C44 115 50 128 60 135" />
+                <path d="M60 35 C46 35 38 50 38 70 L38 82 L58 82 L58 68 L74 68 L74 95 C74 112 66 126 54 133" />
+                <path d="M60 45 C54 45 50 55 50 70 L50 78 L64 78 L64 58 L82 58 L82 100 C82 115 76 126 68 132" />
+                <path d="M8 65 C8 100 22 128 44 143" />
+                <path d="M98 55 L98 88 L110 88 L110 108 C110 122 102 132 92 138" />
+                <circle cx="14" cy="90" r="2.6" />
+                <circle cx="44" cy="85" r="2.6" />
+                <circle cx="58" cy="82" r="2.6" />
+                <circle cx="74" cy="68" r="2.6" />
+                <circle cx="82" cy="58" r="2.6" />
+                <circle cx="110" cy="88" r="2.6" />
+              </svg>
+              <div class="bio-scanline" id="bioScanline"></div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="token-stage">
-        <div class="token-key" id="tokenKey">
-          <div class="token-key-body"><span>2FA</span></div>
-          <div class="token-key-prong"></div>
+      <div class="token-step locked" id="keyStep">
+        <div class="token-step-head">
+          <span class="token-step-num">02</span>
+          <h3>Hardware Key</h3>
+          <span class="token-step-status" id="keyStepStatus">Locked</span>
         </div>
-        <div class="token-port">
-          <div class="token-port-mouth"></div>
-          <div class="token-led" id="tokenLed"></div>
+        <div class="token-grid">
+          <div class="token-copy">
+            <p>A hardware key plugs into a USB port or taps over NFC. When a site asks for your second
+            factor, you simply touch the key instead of typing a code — nothing can be phished, guessed,
+            or intercepted, because the proof never leaves the device.</p>
+            <p>Insert the simulated key to see how it completes the circuit.</p>
+            <button class="btn btn-primary" id="insertKeyBtn" disabled>Insert Hardware Key</button>
+          </div>
+
+          <div class="token-stage">
+            <div class="token-key" id="tokenKey">
+              <div class="token-key-body"><span>2FA</span></div>
+              <div class="token-key-prong"></div>
+            </div>
+            <div class="token-port">
+              <div class="token-port-mouth"></div>
+              <div class="token-led" id="tokenLed"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="token-reveal">
+          <span class="eyebrow">Decrypted note</span>
+          <p id="tokenText">
+            Two-factor authentication turns "something you know" — a password — into "something you know
+            plus something you have." Even if your password leaks in a breach, an attacker still can't get
+            in without physically holding your key. Of the available second-factor methods, hardware keys
+            resist phishing better than SMS codes or one-time codes typed from an app, because the key
+            cryptographically verifies the website itself before it responds.
+          </p>
         </div>
       </div>
-    </div>
 
-    <div class="token-reveal">
-      <span class="eyebrow">Decrypted note</span>
-      <p id="tokenText">
-        Two-factor authentication turns "something you know" — a password — into "something you know
-        plus something you have." Even if your password leaks in a breach, an attacker still can't get
-        in without physically holding your key. Of the available second-factor methods, hardware keys
-        resist phishing better than SMS codes or one-time codes typed from an app, because the key
-        cryptographically verifies the website itself before it responds.
-      </p>
     </div>
   </div>
 </section>
@@ -604,11 +819,14 @@ footer{ padding: 44px 0; }
 })();
 
 /* ============================================================
-   2. MAGNETIC BUTTON
+   2. MAGNETIC BUTTON — desktop only (fine pointer + real hover)
    ============================================================ */
 (function initMagneticButton(){
   const btn = document.getElementById('magneticBtn');
   const strength = 0.35;
+  const isDesktopPointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  if(!isDesktopPointer) return;
 
   btn.addEventListener('mousemove', function(e){
     const rect = btn.getBoundingClientRect();
@@ -620,6 +838,114 @@ footer{ padding: 44px 0; }
   btn.addEventListener('mouseleave', function(){
     btn.style.transform = 'translate(0, 0)';
   });
+})();
+
+/* ============================================================
+   2b. AMBIENT COLOR GRADE — background tied to scroll position
+   Interpolates the fixed color-grade layer between three "Cinematic
+   Slate" tones as the reader moves through the page: neutral at the
+   Hero, darker/moodier through the Threats sections (breach terminal
+   through the redacted-document grid), resolving to a calm desaturated
+   teal by the Timeline/FAQ.
+   ============================================================ */
+(function initAmbientColorGrade(){
+  const grade = document.getElementById('colorGrade');
+  if(!grade) return;
+
+  const HERO = [26, 28, 35];     // #1A1C23
+  const THREAT = [15, 16, 21];   // #0F1015
+  const RESOLVED = [22, 34, 38]; // #162226
+
+  function lerp(a, b, t){ return a + (b - a) * t; }
+  function mix(c1, c2, t){
+    return [
+      Math.round(lerp(c1[0], c2[0], t)),
+      Math.round(lerp(c1[1], c2[1], t)),
+      Math.round(lerp(c1[2], c2[2], t))
+    ];
+  }
+  function toRgb(c){ return 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')'; }
+
+  const threatAnchor = document.getElementById('terminal');
+  const resolvedAnchor = document.getElementById('timeline');
+
+  let ticking = false;
+
+  function update(){
+    ticking = false;
+    const vh = window.innerHeight;
+    const mid = vh * 0.5;
+
+    // Progress 0 -> 1 from Hero into the Threats zone (terminal section reaching mid-viewport)
+    let tThreat = 0;
+    if(threatAnchor){
+      const rect = threatAnchor.getBoundingClientRect();
+      const start = vh;              // section bottom edge enters viewport
+      const end = mid;                // section reaches vertical center
+      tThreat = (start - rect.top) / (start - end);
+      tThreat = Math.min(Math.max(tThreat, 0), 1);
+    }
+
+    // Progress 0 -> 1 from Threats into the Resolved zone (timeline section reaching mid-viewport)
+    let tResolved = 0;
+    if(resolvedAnchor){
+      const rect = resolvedAnchor.getBoundingClientRect();
+      const start = vh;
+      const end = mid;
+      tResolved = (start - rect.top) / (start - end);
+      tResolved = Math.min(Math.max(tResolved, 0), 1);
+    }
+
+    let color;
+    if(tResolved > 0){
+      color = mix(THREAT, RESOLVED, tResolved);
+    } else {
+      color = mix(HERO, THREAT, tThreat);
+    }
+
+    grade.style.backgroundColor = toRgb(color);
+  }
+
+  function onScroll(){
+    if(!ticking){
+      window.requestAnimationFrame(update);
+      ticking = true;
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  update();
+})();
+
+/* ============================================================
+   2c. PARALLAX BLUEPRINT — faint circuit schematic drifts slower
+   than the page for a "massive depth of field" cinematic feel.
+   ============================================================ */
+(function initParallaxBlueprint(){
+  const layer = document.getElementById('blueprintLayer');
+  if(!layer) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduceMotion) return;
+
+  const RATE = 0.12; // fraction of scroll speed — lower = slower drift
+  let ticking = false;
+
+  function update(){
+    ticking = false;
+    const offset = window.scrollY * RATE;
+    layer.style.transform = 'translate(-50%, ' + (-offset) + 'px)';
+  }
+
+  window.addEventListener('scroll', function(){
+    if(!ticking){
+      window.requestAnimationFrame(update);
+      ticking = true;
+    }
+  }, { passive: true });
+
+  update();
 })();
 
 /* ============================================================
@@ -737,7 +1063,92 @@ footer{ padding: 44px 0; }
 })();
 
 /* ============================================================
-   5. HARDWARE TOKEN SANDBOX
+   5. BIOMETRIC PRE-CHECK — press-and-hold, 1.5s, unlocks Step 2
+   Uses touchstart/touchend/touchcancel alongside mouse events so
+   the hold animation survives default mobile browser behavior
+   (long-press context menus, scroll cancellation, etc).
+   ============================================================ */
+(function initBiometricPreCheck(){
+  const holdBtn = document.getElementById('bioHoldBtn');
+  const thumb = document.getElementById('bioThumb');
+  const status = document.getElementById('bioStatus');
+  const bioStepStatus = document.getElementById('bioStepStatus');
+  const keyStep = document.getElementById('keyStep');
+  const keyStepStatus = document.getElementById('keyStepStatus');
+  const insertBtn = document.getElementById('insertKeyBtn');
+
+  const HOLD_MS = 1500;
+  let holdTimer = null;
+  let holding = false;
+  let unlocked = false;
+
+  function startHold(){
+    if(unlocked || holding) return;
+    holding = true;
+
+    holdBtn.classList.add('holding');
+    thumb.classList.add('scanning');
+    thumb.classList.remove('scanned');
+    status.textContent = 'Scanning…';
+    status.classList.remove('success');
+    bioStepStatus.textContent = 'Scanning…';
+
+    holdTimer = setTimeout(completeHold, HOLD_MS);
+  }
+
+  function cancelHold(){
+    if(unlocked || !holding) return;
+    holding = false;
+
+    clearTimeout(holdTimer);
+    holdBtn.classList.remove('holding');
+    thumb.classList.remove('scanning');
+    status.textContent = 'Released early — press and hold for 1.5 seconds';
+    bioStepStatus.textContent = 'Not started';
+  }
+
+  function completeHold(){
+    holding = false;
+    unlocked = true;
+
+    holdBtn.classList.remove('holding');
+    thumb.classList.remove('scanning');
+    thumb.classList.add('scanned');
+    status.textContent = 'Scan complete — identity verified.';
+    status.classList.add('success');
+    bioStepStatus.textContent = 'Verified';
+
+    keyStep.classList.remove('locked');
+    keyStepStatus.textContent = 'Unlocked';
+    insertBtn.disabled = false;
+  }
+
+  // Mouse
+  holdBtn.addEventListener('mousedown', startHold);
+  holdBtn.addEventListener('mouseup', cancelHold);
+  holdBtn.addEventListener('mouseleave', cancelHold);
+
+  // Touch — start/end/cancel all handled so the hold survives
+  // default mobile browser interruptions (context menu, scroll).
+  holdBtn.addEventListener('touchstart', function(e){
+    e.preventDefault();
+    startHold();
+  }, { passive: false });
+  holdBtn.addEventListener('touchend', function(e){
+    e.preventDefault();
+    cancelHold();
+  }, { passive: false });
+  holdBtn.addEventListener('touchcancel', function(e){
+    cancelHold();
+  }, { passive: false });
+
+  // Belt-and-braces: block the context menu on long-press.
+  holdBtn.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+  thumb.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+})();
+
+/* ============================================================
+   6. HARDWARE KEY INSERTION (Step 2 — unlocked by biometric check)
    ============================================================ */
 (function initTokenSandbox(){
   const btn = document.getElementById('insertKeyBtn');
@@ -747,7 +1158,7 @@ footer{ padding: 44px 0; }
   let inserted = false;
 
   btn.addEventListener('click', function(){
-    if(inserted) return;
+    if(inserted || btn.disabled) return;
     inserted = true;
 
     key.classList.add('inserted');
@@ -784,11 +1195,37 @@ footer{ padding: 44px 0; }
       overlay.style.setProperty('--my', '-50%');
     });
 
-    card.addEventListener('touchmove', function(e){
+    let sweeping = false;
+
+    card.addEventListener('touchstart', function(e){
+      sweeping = true;
+      e.preventDefault();
       const touch = e.touches[0];
       const rect = card.getBoundingClientRect();
       overlay.style.setProperty('--mx', (touch.clientX - rect.left) + 'px');
       overlay.style.setProperty('--my', (touch.clientY - rect.top) + 'px');
+    }, { passive: false });
+
+    card.addEventListener('touchmove', function(e){
+      if(!sweeping) return;
+      // Finger is actively sweeping the card — stop the page from
+      // scrolling underneath so the reveal tracks the touch cleanly.
+      e.preventDefault();
+
+      const touch = e.touches[0];
+      const rect = card.getBoundingClientRect();
+      overlay.style.setProperty('--mx', (touch.clientX - rect.left) + 'px');
+      overlay.style.setProperty('--my', (touch.clientY - rect.top) + 'px');
+    }, { passive: false });
+
+    card.addEventListener('touchend', function(){
+      sweeping = false;
+      overlay.style.setProperty('--my', '-50%');
+    }, { passive: true });
+
+    card.addEventListener('touchcancel', function(){
+      sweeping = false;
+      overlay.style.setProperty('--my', '-50%');
     }, { passive: true });
   });
 })();
