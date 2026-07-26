@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kryptis — Trust is Built. Security is Engineered.</title>
+<meta name="description" content="A cinematic, comfortable guide to everyday digital security.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   0. TOKENS — "Cinematic Slate" soft dark mode
+   No pure black, no pure white — a matte, low-strain grade.
+   ============================================================ */
+:root{
+  --bg: #1A1C23;
+  --bg-redact: #101218;
+  --surface: #20232C;
+  --border: rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.18);
+  --heading: #E0E2E8;
+  --body: #9BA1B0;
+  --teal: #6398A8;
+  --cyan: #446C79;
+  --weak: #B3493F;
+  --fair: #C98A4A;
+  --led-off: #4a4e58;
+  --mono: 'SFMono-Regular', ui-monospace, Menlo, Consolas, monospace;
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --container: 1160px;
+}
+
+*, *::before, *::after{ box-sizing:border-box; margin:0; padding:0; }
+html{ scroll-behavior:smooth; }
+body{
+  background: var(--bg);
+  color: var(--body);
+  font-family: var(--font-body);
+  line-height: 1.65;
+  overflow-x: hidden;
+}
+a{ color:inherit; text-decoration:none; }
+ul{ list-style:none; }
+button{ font-family:inherit; cursor:pointer; background:none; border:none; color:inherit; }
+::selection{ background: var(--teal); color:#0f1115; }
+
+h1,h2,h3{ font-family: var(--font-display); font-weight:700; color: var(--heading); letter-spacing:-0.01em; }
+
+.container{ max-width: var(--container); margin:0 auto; padding: 0 32px; }
+@media (max-width:640px){ .container{ padding: 0 22px; } }
+
+.eyebrow{
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--teal);
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::before{ content:""; width:20px; height:1px; background: var(--cyan); }
+
+a:focus-visible, button:focus-visible, input:focus-visible{
+  outline: 2px solid var(--teal); outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; scroll-behavior:auto !important; }
+  .focus-section{ filter:none !important; opacity:1 !important; }
+}
+
+/* ============================================================
+   1. PULL-FOCUS SCROLL (cinematic global effect)
+   A rootMargin "focus band" through the vertical middle of the
+   viewport is watched by an IntersectionObserver. Sections inside
+   it stay sharp; sections outside soften and dim — like racking
+   focus on a lens. `filter: blur()` performs the actual visual
+   softening of each section's own content (backdrop-filter can only
+   blur what sits behind a transparent element, not the section's
+   own text) — a matching `backdrop-filter` is used on the sticky
+   header to keep that frosted-glass language present too.
+   ============================================================ */
+.focus-section{
+  transition: filter 0.6s ease, opacity 0.6s ease;
+  filter: blur(0px);
+  opacity: 1;
+}
+.focus-section.out-of-focus{
+  filter: blur(7px);
+  opacity: 0.38;
+  pointer-events: none;
+}
+
+/* ============================================================
+   2. HEADER
+   ============================================================ */
+header.masthead{
+  position: sticky; top:0; z-index:100;
+  border-bottom: 1px solid var(--border);
+  background: rgba(26,28,35,0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.masthead-inner{ display:flex; align-items:center; justify-content:space-between; padding: 20px 0; }
+.brand{ font-family: var(--font-display); font-weight:700; font-size:1.1rem; color: var(--heading); display:flex; align-items:center; gap:10px; }
+.brand-dot{ width:8px; height:8px; border-radius:50%; background: var(--teal); box-shadow: 0 0 10px var(--teal); }
+.masthead nav{ display:flex; gap:28px; }
+.masthead nav a{ font-size:0.83rem; color: var(--body); transition: color 0.2s ease; }
+.masthead nav a:hover{ color: var(--heading); }
+@media (max-width:900px){ .masthead nav{ display:none; } }
+
+/* ============================================================
+   3. HERO + MAGNETIC BUTTON
+   ============================================================ */
+.hero{ padding: 130px 0 110px; position:relative; }
+.hero .eyebrow{ margin-bottom:26px; }
+.hero h1{ font-size: clamp(2.5rem, 6.6vw, 5.8rem); line-height: 1.05; max-width: 16ch; margin-bottom: 30px; }
+.hero h1 span{ color: var(--teal); }
+.hero p.lede{ max-width: 52ch; font-size:1.08rem; margin-bottom:44px; }
+
+.hero-ctas{ display:flex; gap:16px; flex-wrap:wrap; }
+.btn{
+  display:inline-flex; align-items:center; gap:10px;
+  padding: 15px 30px; border-radius: 100px; font-weight:600; font-size:0.92rem;
+  transition: transform 0.15s ease-out, border-color 0.25s ease, background 0.25s ease;
+}
+.btn-primary{ background: linear-gradient(100deg, var(--teal), var(--cyan)); color: #0f1115; }
+.btn-secondary{ border: 1px solid var(--border); color: var(--heading); }
+.btn-secondary:hover{ transform: translateY(-3px); border-color: var(--teal); }
+.btn svg{ width:16px; height:16px; transition: transform 0.3s ease; }
+.btn:hover svg{ transform: translateX(4px); }
+
+/* ============================================================
+   4. SHARED SECTION SCAFFOLD
+   ============================================================ */
+section{ padding: 108px 0; border-bottom: 1px solid var(--border); }
+.section-head{ max-width: 640px; margin-bottom:56px; }
+.section-head h2{ font-size: clamp(1.75rem, 3.2vw, 2.5rem); margin: 14px 0 12px; }
+.section-head p{ font-size:0.98rem; }
+.section-head.split{ max-width:none; display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:end; }
+.section-head.split p{ justify-self:end; text-align:right; max-width:38ch; }
+@media (max-width:760px){
+  .section-head.split{ grid-template-columns:1fr; }
+  .section-head.split p{ justify-self:start; text-align:left; }
+}
+
+/* ============================================================
+   5. DATA BREACH TERMINAL
+   ============================================================ */
+.terminal{ background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; max-width: 820px; margin: 0 auto; }
+.terminal-bar{ display:flex; align-items:center; gap:8px; padding: 14px 18px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02); }
+.terminal-dot{ width:11px; height:11px; border-radius:50%; background: rgba(255,255,255,0.12); }
+.terminal-title{ margin-left:8px; font-family: var(--mono); font-size:0.78rem; color: var(--body); }
+.terminal-body{ padding: 26px 24px; font-family: var(--mono); font-size:0.88rem; color: var(--heading); min-height: 240px; display:flex; flex-direction:column; gap:8px; }
+.terminal-line{ opacity:0; animation: lineIn 0.25s ease forwards; }
+.terminal-line.dim{ color: var(--body); }
+.terminal-line.ok{ color: var(--teal); }
+@keyframes lineIn{ from{ opacity:0; transform: translateY(3px); } to{ opacity:1; transform:translateY(0); } }
+.terminal-input-row{ display:flex; align-items:center; gap:10px; padding: 16px 24px; border-top: 1px solid var(--border); background: rgba(255,255,255,0.015); }
+.terminal-prompt{ font-family: var(--mono); color: var(--teal); font-size:0.9rem; }
+.terminal-input-row input{ flex:1; min-width:0; background:transparent; border:none; outline:none; font-family: var(--mono); font-size:0.9rem; color: var(--heading); }
+.terminal-input-row input::placeholder{ color: rgba(155,161,176,0.55); }
+.terminal-hint{ margin-top:16px; font-family: var(--mono); font-size:0.76rem; color: var(--body); text-align:center; }
+
+/* ============================================================
+   6. PASSWORD VALIDATOR
+   ============================================================ */
+.validator-grid{ display:grid; grid-template-columns: 0.9fr 1.1fr; gap:56px; align-items:start; }
+@media (max-width:860px){ .validator-grid{ grid-template-columns:1fr; } }
+.validator-copy h3{ font-size:1.05rem; margin-bottom:14px; }
+.validator-copy p{ margin-bottom:14px; max-width:44ch; }
+.validator-copy ul{ margin-top:28px; display:flex; flex-direction:column; gap:14px; }
+.validator-copy li{ display:flex; justify-content:space-between; align-items:center; padding-bottom:14px; border-bottom:1px solid var(--border); font-size:0.9rem; }
+.validator-copy li .req-status{ font-family: var(--font-display); font-size:0.74rem; letter-spacing:0.06em; color: var(--body); transition: color 0.25s ease; }
+.validator-copy li.met .req-status{ color: var(--teal); }
+.validator-copy li.met .req-status::before{ content:"✓ "; }
+.validator-copy li:not(.met) .req-status::before{ content:"— "; }
+
+.validator-panel{ background: var(--surface); border:1px solid var(--border); border-radius:14px; padding: 38px; }
+.validator-panel label{ display:block; font-size:0.76rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--body); margin-bottom:12px; }
+.validator-panel input{ width:100%; border:none; border-bottom: 2px solid var(--border-strong); background:transparent; font-family: var(--font-display); font-size:1.35rem; padding: 8px 0 14px; color: var(--heading); transition: border-color 0.25s ease; }
+.validator-panel input:focus{ outline:none; border-color: var(--teal); }
+.strength-track{ margin-top: 28px; height: 6px; background: var(--border); border-radius:4px; overflow:hidden; }
+.strength-fill{ height:100%; width:0%; background: var(--body); transition: width 0.35s ease, background 0.35s ease; }
+.strength-label{ margin-top:14px; display:flex; justify-content:space-between; align-items:baseline; font-family: var(--font-display); font-weight:600; font-size:0.94rem; color: var(--heading); }
+.strength-label span:last-child{ font-family: var(--font-body); font-weight:500; font-size:0.78rem; color: var(--body); }
+
+/* ============================================================
+   7. HARDWARE TOKEN SANDBOX
+   ============================================================ */
+.token-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items:center; }
+@media (max-width:860px){ .token-grid{ grid-template-columns:1fr; gap:44px; } }
+.token-copy p{ margin-bottom:14px; max-width:46ch; }
+.token-copy .btn{ margin-top:16px; }
+.token-stage{ position:relative; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; height: 240px; display:flex; align-items:center; justify-content:center; overflow: hidden; }
+.token-port{ position:relative; width:150px; height:44px; background: #14161b; border: 1px solid var(--border); border-radius: 6px; display:flex; align-items:center; justify-content:flex-start; padding-left: 10px; }
+.token-port-mouth{ width:34px; height:14px; background: #0c0d10; border-radius:3px; border: 1px solid rgba(255,255,255,0.06); }
+.token-led{ position:absolute; right:14px; top:50%; transform: translateY(-50%); width:9px; height:9px; border-radius:50%; background: var(--led-off); transition: background 0.3s ease, box-shadow 0.3s ease; }
+.token-led.on{ background: #6bd68f; box-shadow: 0 0 10px #6bd68f, 0 0 22px rgba(107,214,143,0.5); }
+.token-key{ position:absolute; left: 14%; top:50%; transform: translate(0, -50%); display:flex; align-items:center; transition: transform 0.9s cubic-bezier(.4,0,.2,1); }
+.token-key.inserted{ transform: translate(155px, -50%); }
+.token-key-body{ width:64px; height:26px; border-radius:6px; background: linear-gradient(135deg, var(--teal), var(--cyan)); display:flex; align-items:center; justify-content:center; box-shadow: 0 6px 18px rgba(0,0,0,0.35); }
+.token-key-body span{ font-family: var(--mono); font-size:0.6rem; color:#0f1115; font-weight:700; }
+.token-key-prong{ width:26px; height:10px; background:#c9ccd2; border-radius: 0 3px 3px 0; margin-left:-1px; }
+.token-reveal{ margin-top: 36px; max-width: 640px; padding-top: 28px; border-top: 1px solid var(--border); }
+.token-reveal p{ filter: blur(6px); opacity: 0.45; transition: filter 0.7s ease, opacity 0.7s ease; }
+.token-reveal p.revealed{ filter: blur(0); opacity: 1; }
+.token-reveal .eyebrow{ margin-bottom: 12px; }
+
+/* ============================================================
+   8. REDACTED DOCUMENT GRID
+   ============================================================ */
+.dossier-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap:1px; background: var(--border); border-radius:14px; overflow:hidden; }
+@media (max-width:900px){ .dossier-grid{ grid-template-columns:1fr; } }
+.dossier-card{ background: var(--surface); padding: 34px 30px 38px; position: relative; cursor: crosshair; }
+.dossier-stamp{ display:inline-flex; align-items:center; gap:8px; font-family: var(--mono); font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--teal); border:1px solid var(--teal); border-radius:100px; padding: 5px 12px; margin-bottom:20px; }
+.dossier-card h3{ font-size:1.15rem; margin-bottom:16px; }
+.redacted-wrap{ position:relative; }
+.redacted-wrap p{ color: var(--body); font-size:0.92rem; position:relative; z-index:1; }
+.redaction-overlay{
+  position:absolute; inset:0; z-index:2;
+  background: repeating-linear-gradient(var(--bg-redact), var(--bg-redact) 12px, transparent 12px, transparent 21px);
+  -webkit-mask-image: radial-gradient(circle 90px at var(--mx,50%) var(--my,-50%), transparent 0%, transparent 40%, black 68%);
+          mask-image: radial-gradient(circle 90px at var(--mx,50%) var(--my,-50%), transparent 0%, transparent 40%, black 68%);
+  transition: -webkit-mask-image 0.05s linear, mask-image 0.05s linear;
+}
+.dossier-hint{ margin-top:18px; font-family: var(--mono); font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color: var(--body); display:flex; align-items:center; gap:8px; }
+.dossier-hint::before{ content:"◎"; color: var(--teal); }
+
+/* ============================================================
+   9. SCROLL-TRIGGERED SECURITY TIMELINE
+   ============================================================ */
+.timeline{ position:relative; max-width: 720px; margin: 0 auto; }
+.timeline::before{ content:""; position:absolute; left:20px; top:6px; bottom:6px; width:1px; background: var(--border-strong); }
+.timeline-step{ position:relative; padding-left: 64px; margin-bottom: 60px; opacity:0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.timeline-step:last-child{ margin-bottom:0; }
+.timeline-step.in-view{ opacity:1; transform: translateY(0); }
+.timeline-num{ position:absolute; left:0; top:0; width:40px; height:40px; border:1px solid var(--border-strong); border-radius:50%; display:flex; align-items:center; justify-content:center; font-family: var(--font-display); font-weight:600; font-size:0.9rem; background: var(--bg); color: var(--body); transition: border-color 0.4s ease, color 0.4s ease; }
+.timeline-step.in-view .timeline-num{ border-color: var(--teal); color: var(--teal); }
+.timeline-step h3{ font-size:1.2rem; margin-bottom:10px; }
+.timeline-step p{ max-width:52ch; }
+
+/* ============================================================
+   10. FAQ — minimalist, border-bottom only
+   ============================================================ */
+.faq-list{ max-width: 780px; }
+.faq-item{ border-bottom: 1px solid var(--border); }
+.faq-item:first-child{ border-top: 1px solid var(--border); }
+.faq-q{ width:100%; display:flex; align-items:center; justify-content:space-between; padding: 24px 0; font-family: var(--font-display); font-weight:600; font-size:1.02rem; color: var(--heading); text-align:left; }
+.faq-plus{ position:relative; width:16px; height:16px; flex-shrink:0; margin-left:20px; }
+.faq-plus::before, .faq-plus::after{ content:""; position:absolute; background: var(--teal); transition: transform 0.3s ease; }
+.faq-plus::before{ top:50%; left:0; width:100%; height:1.5px; transform: translateY(-50%); }
+.faq-plus::after{ left:50%; top:0; height:100%; width:1.5px; transform: translateX(-50%); }
+.faq-item.open .faq-plus::after{ transform: translateX(-50%) scaleY(0); }
+.faq-a{ max-height:0; overflow:hidden; transition: max-height 0.4s ease; }
+.faq-a p{ padding-bottom:24px; max-width:60ch; }
+
+/* ============================================================
+   11. FOOTER
+   ============================================================ */
+footer{ padding: 44px 0; }
+.footer-row{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; font-size:0.8rem; }
+.footer-row a{ transition:color 0.2s ease; }
+.footer-row a:hover{ color: var(--teal); }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header class="masthead">
+  <div class="container masthead-inner">
+    <a href="#home" class="brand"><span class="brand-dot"></span> KRYPTIS</a>
+    <nav>
+      <a href="#terminal">Scan</a>
+      <a href="#validator">Passwords</a>
+      <a href="#token">Hardware Keys</a>
+      <a href="#dossier">Threats</a>
+      <a href="#timeline">Protocol</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ============================================================
+     HERO — massive clamp() type + magnetic CTA + pull-focus target
+     ============================================================ -->
+<section class="hero focus-section" id="home">
+  <div class="container">
+    <span class="eyebrow">Cybersecurity, in focus</span>
+    <h1>Trust is built.<br><span>Security</span> is engineered.</h1>
+    <p class="lede">A calm, well-lit walkthrough of the habits that keep your accounts, your data, and
+    your identity out of reach of the people trying to get at them.</p>
+    <div class="hero-ctas">
+      <button class="btn btn-primary" id="magneticBtn">
+        Scan System
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M13 6l6 6-6 6"/>
+        </svg>
+      </button>
+      <a href="#token" class="btn btn-secondary">See a Hardware Key</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     DATA BREACH TERMINAL
+     ============================================================ -->
+<section class="focus-section" id="terminal">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Exercise 01</span>
+      <h2>Run a mock breach scan</h2>
+      <p>Nothing you type here is sent anywhere — this is a simulated scan that runs entirely in your browser.</p>
+    </div>
+
+    <div class="terminal">
+      <div class="terminal-bar">
+        <span class="terminal-dot"></span>
+        <span class="terminal-dot"></span>
+        <span class="terminal-dot"></span>
+        <span class="terminal-title">scan.kryptis — mock-shell</span>
+      </div>
+
+      <div class="terminal-body" id="terminalBody">
+        <div class="terminal-line dim">Enter a dummy email below and press Enter to begin a mock scan.</div>
+      </div>
+
+      <div class="terminal-input-row">
+        <span class="terminal-prompt">&gt;</span>
+        <input type="text" id="terminalInput" placeholder="dummy@example.com" autocomplete="off" spellcheck="false">
+      </div>
+    </div>
+    <p class="terminal-hint">Try any dummy address — this simulation never leaves your device.</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     PASSWORD VALIDATOR
+     ============================================================ -->
+<section class="focus-section" id="validator">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Exercise 02</span>
+      <h2>Test a dummy password</h2>
+      <p>Nothing here is stored, sent, or logged — this runs entirely in your browser, live, as you type.</p>
+    </div>
+
+    <div class="validator-grid">
+      <div class="validator-copy">
+        <h3>What actually makes a password strong</h3>
+        <p>Length matters more than clever substitutions. A manager-generated passphrase clears every
+        requirement below without you having to remember a thing.</p>
+        <ul>
+          <li id="reqLength"><span>12+ characters</span><span class="req-status">Not met</span></li>
+          <li id="reqCase"><span>Upper &amp; lowercase letters</span><span class="req-status">Not met</span></li>
+          <li id="reqNumber"><span>At least one number</span><span class="req-status">Not met</span></li>
+          <li id="reqSymbol"><span>At least one symbol</span><span class="req-status">Not met</span></li>
+        </ul>
+      </div>
+
+      <div class="validator-panel">
+        <label for="pwInput">Dummy password</label>
+        <input type="text" id="pwInput" placeholder="Start typing…" autocomplete="off" spellcheck="false">
+        <div class="strength-track"><div class="strength-fill" id="strengthFill"></div></div>
+        <div class="strength-label">
+          <span id="strengthText">Enter a password</span>
+          <span id="strengthScore">0 / 4</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     HARDWARE TOKEN SANDBOX
+     ============================================================ -->
+<section class="focus-section" id="token">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Exercise 03</span>
+      <h2>Meet the hardware security key</h2>
+      <p>A small physical device — like a YubiKey — that proves it's really you, without a code to type or a text message to intercept.</p>
+    </div>
+
+    <div class="token-grid">
+      <div class="token-copy">
+        <p>A hardware key plugs into a USB port or taps over NFC. When a site asks for your second
+        factor, you simply touch the key instead of typing a code — nothing can be phished, guessed,
+        or intercepted, because the proof never leaves the device.</p>
+        <p>Insert the simulated key to see how it completes the circuit.</p>
+        <button class="btn btn-primary" id="insertKeyBtn">Insert Hardware Key</button>
+      </div>
+
+      <div class="token-stage">
+        <div class="token-key" id="tokenKey">
+          <div class="token-key-body"><span>2FA</span></div>
+          <div class="token-key-prong"></div>
+        </div>
+        <div class="token-port">
+          <div class="token-port-mouth"></div>
+          <div class="token-led" id="tokenLed"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="token-reveal">
+      <span class="eyebrow">Decrypted note</span>
+      <p id="tokenText">
+        Two-factor authentication turns "something you know" — a password — into "something you know
+        plus something you have." Even if your password leaks in a breach, an attacker still can't get
+        in without physically holding your key. Of the available second-factor methods, hardware keys
+        resist phishing better than SMS codes or one-time codes typed from an app, because the key
+        cryptographically verifies the website itself before it responds.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     REDACTED DOCUMENT GRID
+     ============================================================ -->
+<section class="focus-section" id="dossier" style="padding-bottom:0;">
+  <div class="container">
+    <div class="section-head split">
+      <div>
+        <span class="eyebrow">Exercise 04</span>
+        <h2 style="margin-top:14px;">Declassify the threat</h2>
+      </div>
+      <p>Move your cursor over each file. The redaction only lifts where you're looking.</p>
+    </div>
+  </div>
+
+  <div class="container" style="padding-top:0; padding-bottom:96px;">
+    <div class="dossier-grid">
+
+      <article class="dossier-card" data-dossier>
+        <span class="dossier-stamp">File 01</span>
+        <h3>Phishing</h3>
+        <div class="redacted-wrap">
+          <p>Attackers impersonate a bank, employer, or delivery service to create urgency. The email
+          looks legitimate; the link underneath it does not go where the text claims. Hover any link
+          before you trust it — the real destination is always visible in your browser's status bar.</p>
+          <div class="redaction-overlay"></div>
+        </div>
+        <p class="dossier-hint">Hover to declassify</p>
+      </article>
+
+      <article class="dossier-card" data-dossier>
+        <span class="dossier-stamp">File 02</span>
+        <h3>Two-Factor Authentication</h3>
+        <div class="redacted-wrap">
+          <p>A password alone is one lock on one door. Two-factor authentication adds a second, physical
+          lock — a code from your phone or a hardware key — so a stolen password by itself opens nothing.
+          Enable it first on your email; everything else recovers through that account.</p>
+          <div class="redaction-overlay"></div>
+        </div>
+        <p class="dossier-hint">Hover to declassify</p>
+      </article>
+
+      <article class="dossier-card" data-dossier>
+        <span class="dossier-stamp">File 03</span>
+        <h3>Data Privacy</h3>
+        <div class="redacted-wrap">
+          <p>Encrypted data is unreadable without the key, even if it's stolen outright. Before sharing
+          personal information with an app or service, ask what it collects, why, and how long it's kept
+          — the safest data is the data that was never handed over.</p>
+          <div class="redaction-overlay"></div>
+        </div>
+        <p class="dossier-hint">Hover to declassify</p>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     SCROLL-TRIGGERED SECURITY TIMELINE
+     ============================================================ -->
+<section class="focus-section" id="timeline">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Protocol</span>
+      <h2>Three steps to secure your identity</h2>
+      <p>Scroll down — each step confirms itself as it enters view.</p>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-step">
+        <span class="timeline-num">01</span>
+        <h3>Lock down your email first</h3>
+        <p>It's the recovery path for almost every other account you own. A long passphrase plus
+        two-factor authentication here protects everything downstream of it.</p>
+      </div>
+
+      <div class="timeline-step">
+        <span class="timeline-num">02</span>
+        <h3>Give every account its own password</h3>
+        <p>A password manager makes this painless. Reused passwords mean one leaked database can
+        unlock accounts on services that were never breached themselves.</p>
+      </div>
+
+      <div class="timeline-step">
+        <span class="timeline-num">03</span>
+        <h3>Slow down before you click</h3>
+        <p>Urgency is the most common tactic in social engineering. A moment's pause to verify a sender
+        or a request stops most attacks before they start.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FAQ
+     ============================================================ -->
+<section id="faq">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Reference</span>
+      <h2>Frequently asked</h2>
+      <p>Short, direct answers — no jargon.</p>
+    </div>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">
+          What counts as a "breach" in the mock scan above?
+          <span class="faq-plus"></span>
+        </button>
+        <div class="faq-a">
+          <p>In a real breach-check tool, it means your email address turned up in a leaked dataset
+          from a compromised service. This demo doesn't check anything real — it's here to show what
+          that kind of report looks like, safely.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">
+          Do I need a hardware key if I already use an authenticator app?
+          <span class="faq-plus"></span>
+        </button>
+        <div class="faq-a">
+          <p>An authenticator app is a big step up from SMS codes and is enough for most people. A
+          hardware key is the stronger option on top of that, mainly worth it for accounts where a
+          breach would be especially costly — your primary email, your password manager, or work systems.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-q" aria-expanded="false">
+          What's the single best habit to start with?
+          <span class="faq-plus"></span>
+        </button>
+        <div class="faq-a">
+          <p>Turn on two-factor authentication for your email account first. It's the recovery path
+          for almost everything else you own online, so protecting it protects everything downstream.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+  <div class="container footer-row">
+    <p>&copy; <span id="year"></span> Kryptis. A field guide, not a substitute for professional advice.</p>
+    <div style="display:flex; gap:24px;">
+      <a href="#terminal">Scan</a>
+      <a href="#validator">Passwords</a>
+      <a href="#token">Hardware Keys</a>
+      <a href="#faq">FAQ</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   1. PULL-FOCUS SCROLL
+   A thin "focus band" runs through the vertical middle of the
+   viewport (achieved with a large negative rootMargin). Any
+   .focus-section intersecting that band is sharp; every other
+   .focus-section gets the .out-of-focus treatment.
+   ============================================================ */
+(function initPullFocus(){
+  const sections = document.querySelectorAll('.focus-section');
+  if(!sections.length) return;
+
+  const observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      entry.target.classList.toggle('out-of-focus', !entry.isIntersecting);
+    });
+  }, {
+    root: null,
+    rootMargin: '-42% 0px -42% 0px',
+    threshold: 0
+  });
+
+  sections.forEach(function(section){ observer.observe(section); });
+})();
+
+/* ============================================================
+   2. MAGNETIC BUTTON
+   ============================================================ */
+(function initMagneticButton(){
+  const btn = document.getElementById('magneticBtn');
+  const strength = 0.35;
+
+  btn.addEventListener('mousemove', function(e){
+    const rect = btn.getBoundingClientRect();
+    const relX = e.clientX - (rect.left + rect.width / 2);
+    const relY = e.clientY - (rect.top + rect.height / 2);
+    btn.style.transform = 'translate(' + relX * strength + 'px, ' + relY * strength + 'px)';
+  });
+
+  btn.addEventListener('mouseleave', function(){
+    btn.style.transform = 'translate(0, 0)';
+  });
+})();
+
+/* ============================================================
+   3. SIMULATED DATA BREACH TERMINAL
+   ============================================================ */
+(function initTerminal(){
+  const input = document.getElementById('terminalInput');
+  const body = document.getElementById('terminalBody');
+  let running = false;
+
+  function addLine(text, cls){
+    const line = document.createElement('div');
+    line.className = 'terminal-line' + (cls ? ' ' + cls : '');
+    line.textContent = text;
+    body.appendChild(line);
+    body.scrollTop = body.scrollHeight;
+    return line;
+  }
+
+  function wait(ms){ return new Promise(function(resolve){ setTimeout(resolve, ms); }); }
+
+  async function runScan(email){
+    running = true;
+    input.disabled = true;
+    body.innerHTML = '';
+
+    addLine('> scan --target ' + email, 'ok');
+    await wait(350);
+    addLine('Initializing scan...', 'dim');
+    await wait(450);
+    addLine('Querying known breach databases (1 / 4)...', 'dim');
+    await wait(400);
+    addLine('Querying known breach databases (2 / 4)...', 'dim');
+    await wait(350);
+    addLine('Querying known breach databases (3 / 4)...', 'dim');
+    await wait(350);
+    addLine('Querying known breach databases (4 / 4)...', 'dim');
+    await wait(450);
+    addLine('Decrypting response headers...', 'dim');
+    await wait(500);
+    addLine('Cross-referencing credential leak indexes...', 'dim');
+    await wait(550);
+    addLine('Compiling report...', 'dim');
+    await wait(500);
+    addLine('—');
+    addLine('SCAN COMPLETE', 'ok');
+    addLine('Target:        ' + email);
+    addLine('Databases checked: 4');
+    addLine('Breaches found:    0', 'ok');
+    addLine('This is a simulated result for demonstration only.', 'dim');
+
+    running = false;
+    input.disabled = false;
+    input.focus();
+  }
+
+  input.addEventListener('keydown', function(e){
+    if(e.key === 'Enter' && !running){
+      const value = input.value.trim();
+      if(!value) return;
+      runScan(value);
+      input.value = '';
+    }
+  });
+})();
+
+/* ============================================================
+   4. PASSWORD VALIDATOR
+   ============================================================ */
+(function initPasswordValidator(){
+  const input = document.getElementById('pwInput');
+  const fill = document.getElementById('strengthFill');
+  const text = document.getElementById('strengthText');
+  const score = document.getElementById('strengthScore');
+
+  const reqLength = document.getElementById('reqLength');
+  const reqCase = document.getElementById('reqCase');
+  const reqNumber = document.getElementById('reqNumber');
+  const reqSymbol = document.getElementById('reqSymbol');
+
+  function setReq(el, met){
+    el.classList.toggle('met', met);
+    el.querySelector('.req-status').textContent = met ? 'Met' : 'Not met';
+  }
+
+  const tiers = [
+    { width: '0%',   color: 'var(--body)', label: 'Enter a password' },
+    { width: '25%',  color: 'var(--weak)', label: 'Weak' },
+    { width: '50%',  color: 'var(--fair)', label: 'Fair' },
+    { width: '75%',  color: 'var(--cyan)', label: 'Good' },
+    { width: '100%', color: 'var(--teal)', label: 'Strong' },
+  ];
+
+  input.addEventListener('input', function(){
+    const value = input.value;
+
+    const meetsLength = value.length >= 12;
+    const meetsCase = /[a-z]/.test(value) && /[A-Z]/.test(value);
+    const meetsNumber = /[0-9]/.test(value);
+    const meetsSymbol = /[^A-Za-z0-9]/.test(value);
+
+    setReq(reqLength, meetsLength);
+    setReq(reqCase, meetsCase);
+    setReq(reqNumber, meetsNumber);
+    setReq(reqSymbol, meetsSymbol);
+
+    const metCount = [meetsLength, meetsCase, meetsNumber, meetsSymbol].filter(Boolean).length;
+    const tier = value.length === 0 ? tiers[0] : tiers[metCount];
+
+    fill.style.width = tier.width;
+    fill.style.background = tier.color;
+    text.textContent = tier.label;
+    score.textContent = metCount + ' / 4';
+  });
+})();
+
+/* ============================================================
+   5. HARDWARE TOKEN SANDBOX
+   ============================================================ */
+(function initTokenSandbox(){
+  const btn = document.getElementById('insertKeyBtn');
+  const key = document.getElementById('tokenKey');
+  const led = document.getElementById('tokenLed');
+  const text = document.getElementById('tokenText');
+  let inserted = false;
+
+  btn.addEventListener('click', function(){
+    if(inserted) return;
+    inserted = true;
+
+    key.classList.add('inserted');
+    btn.textContent = 'Key Inserted';
+
+    key.addEventListener('transitionend', function onDone(){
+      key.removeEventListener('transitionend', onDone);
+      setTimeout(function(){
+        led.classList.add('on');
+        text.classList.add('revealed');
+      }, 200);
+    });
+  });
+})();
+
+/* ============================================================
+   6. REDACTED DOCUMENT GRID — flashlight/declassify sweep
+   ============================================================ */
+(function initDossierCards(){
+  const cards = document.querySelectorAll('[data-dossier]');
+
+  cards.forEach(function(card){
+    const overlay = card.querySelector('.redaction-overlay');
+
+    card.addEventListener('mousemove', function(e){
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      overlay.style.setProperty('--mx', x + 'px');
+      overlay.style.setProperty('--my', y + 'px');
+    });
+
+    card.addEventListener('mouseleave', function(){
+      overlay.style.setProperty('--my', '-50%');
+    });
+
+    card.addEventListener('touchmove', function(e){
+      const touch = e.touches[0];
+      const rect = card.getBoundingClientRect();
+      overlay.style.setProperty('--mx', (touch.clientX - rect.left) + 'px');
+      overlay.style.setProperty('--my', (touch.clientY - rect.top) + 'px');
+    }, { passive: true });
+  });
+})();
+
+/* ============================================================
+   7. SCROLL-TRIGGERED TIMELINE
+   ============================================================ */
+(function initTimelineObserver(){
+  const steps = document.querySelectorAll('.timeline-step');
+
+  const observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        entry.target.classList.add('in-view');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  steps.forEach(function(step){ observer.observe(step); });
+})();
+
+/* ============================================================
+   8. FAQ ACCORDION
+   ============================================================ */
+(function initFaq(){
+  const items = document.querySelectorAll('.faq-item');
+
+  items.forEach(function(item){
+    const question = item.querySelector('.faq-q');
+    const answer = item.querySelector('.faq-a');
+
+    question.addEventListener('click', function(){
+      const isOpen = item.classList.contains('open');
+
+      if(isOpen){
+        answer.style.maxHeight = null;
+        item.classList.remove('open');
+        question.setAttribute('aria-expanded', 'false');
+      } else {
+        item.classList.add('open');
+        question.setAttribute('aria-expanded', 'true');
+        answer.style.maxHeight = answer.scrollHeight + 'px';
+      }
+    });
+  });
+})();
+
+/* ============================================================
+   9. FOOTER YEAR
+   ============================================================ */
+document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
